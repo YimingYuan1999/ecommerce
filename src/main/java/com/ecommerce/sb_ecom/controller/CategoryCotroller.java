@@ -22,6 +22,8 @@ import org.springframework.web.server.ResponseStatusException;
 import com.ecommerce.sb_ecom.service.CategoryService;
 import com.sun.net.httpserver.HttpsConfigurator;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api")
 public class CategoryCotroller {
@@ -40,7 +42,7 @@ public class CategoryCotroller {
     }
 
     @PostMapping("/admin/categories")
-    public ResponseEntity<String> createCategory(@RequestBody Category category) {
+    public ResponseEntity<String> createCategory(@Valid @RequestBody Category category) {
         category.setCategoryId(nextId++);
         categoryService.createCategory(category);
         return ResponseEntity.status(HttpStatus.CREATED).body("Create a new category!!");
@@ -48,22 +50,14 @@ public class CategoryCotroller {
 
     @DeleteMapping("/admin/categories/{categoryId}")
     public ResponseEntity<String> deleteCategory(@PathVariable Long categoryId) {
-        try {
-            String status = categoryService.deleteCategory(categoryId);
-            return ResponseEntity.status(HttpStatus.OK).body(status);
-        } catch (ResponseStatusException e) {
-            return new ResponseEntity<>(e.getReason(), HttpStatus.NOT_FOUND);
-        }
+        String status = categoryService.deleteCategory(categoryId);
+        return ResponseEntity.status(HttpStatus.OK).body(status);
     }
 
     @PutMapping("/admin/categories/{categoryId}")
     public ResponseEntity<String> updateCategory(@PathVariable Long categoryId,
                                                 @RequestBody Category category) {
-        try {
-            Category savedCategory = categoryService.updateCategory(categoryId, category);
-            return ResponseEntity.status(HttpStatus.OK).body("Update categoryid: " + categoryId);
-        } catch (ResponseStatusException e) {
-            return new ResponseEntity<>(e.getReason(), HttpStatus.NOT_FOUND);
-        }
+        Category savedCategory = categoryService.updateCategory(categoryId, category);
+        return ResponseEntity.status(HttpStatus.OK).body("Update categoryid: " + categoryId);
     }
 }
