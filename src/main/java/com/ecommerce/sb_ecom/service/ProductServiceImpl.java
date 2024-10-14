@@ -1,6 +1,9 @@
 package com.ecommerce.sb_ecom.service;
 
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +14,7 @@ import com.ecommerce.sb_ecom.payload.ProductDTO;
 import com.ecommerce.sb_ecom.repository.CategoryRepository;
 import com.ecommerce.sb_ecom.repository.ProductRepository;
 import com.ecommerce.sb_ecom.model.Category;
+import com.ecommerce.sb_ecom.payload.ProductReponse;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -34,5 +38,35 @@ public class ProductServiceImpl implements ProductService {
         Product saveProduct = productRepository.save(product);
         return modelMapper.map(saveProduct,ProductDTO.class);
     }
+
+    @Override
+    public ProductReponse getAllProducts() {
+        List<Product> products =  productRepository.findAll();
+        List<ProductDTO> productDTOs = products.stream().map(product->modelMapper.map(product, ProductDTO.class)).toList();
+        ProductReponse productReponse = new ProductReponse();
+        productReponse.setContent(productDTOs);
+        return productReponse;
+    }
+
+    @Override
+    public ProductReponse searchByCategory(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
+        List<Product> products = productRepository.findByCategoryOrderByPriceAsc(category);
+        List<ProductDTO> productDTOs = products.stream().map(product->modelMapper.map(product, ProductDTO.class)).toList();
+        ProductReponse productReponse = new ProductReponse();
+        productReponse.setContent(productDTOs);
+        return productReponse;
+    }
+
+    @Override
+    public ProductReponse searchProductByKeyword(String keyword) {
+        // Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
+        List<Product> products = productRepository.findByProductNameLikeIgnoreCase('%'+ keyword + '%');
+        List<ProductDTO> productDTOs = products.stream().map(product->modelMapper.map(product, ProductDTO.class)).toList();
+        ProductReponse productReponse = new ProductReponse();
+        productReponse.setContent(productDTOs);
+        return productReponse;
+    }
+
 
 }
